@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { Package, Calendar, MapPin, Loader, ExternalLink } from 'lucide-react';
+import { Package, MapPin, Loader2, ChevronRight, LogOut, ShoppingBag, Clock } from 'lucide-react';
 
 const Profile = () => {
     const { user, logout } = useAuth();
@@ -10,134 +10,189 @@ const Profile = () => {
 
     useEffect(() => {
         const fetchOrders = async () => {
-            if (!user?.token) return; // Don't fetch if no token exists
-
+            if (!user?.token) return;
             try {
-                // We use the Bearer token in the header to identify the user on the server
-                const config = { 
-                    headers: { 
-                        Authorization: `Bearer ${user.token}` 
-                    } 
-                };
-
-                // This hits the .get('/myorders', protect, ...) route you created earlier
+                const config = { headers: { Authorization: `Bearer ${user.token}` } };
                 const { data } = await axios.get('/api/orders/myorders', config);
                 setOrders(data);
             } catch (error) {
                 console.error("Error fetching orders", error);
-                // Optional: handle token expiration by logging out
                 if (error.response?.status === 401) logout();
             } finally {
                 setLoading(false);
             }
         };
-
         fetchOrders();
-    }, [user, logout]); // Added logout to dependencies for safety
+    }, [user, logout]);
 
     if (!user) {
-        return <div className="pt-32 text-center text-red-500 font-mono underline decoration-wavy">ACCESS_DENIED: Please log in.</div>;
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-white">
+                <div className="bg-red-50 p-6 rounded-3xl border border-red-100/50 flex flex-col items-center gap-3 shadow-lg shadow-red-500/5">
+                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-500 mb-2">
+                        <LogOut size={20} />
+                    </div>
+                    <h3 className="text-red-900 font-extrabold text-lg">Access Denied</h3>
+                    <p className="text-red-500/80 font-medium text-sm text-center">Please log in to access your profile.</p>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-24 pb-12 selection:bg-emerald-100">
-            <div className="container mx-auto px-6 lg:px-12">
-                <h1 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">System Account</h1>
+        <div className="min-h-screen bg-gray-50/50 pt-28 pb-24">
+            <div className="container mx-auto px-4 max-w-5xl">
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {/* Sidebar */}
-                    <div className="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center text-2xl font-bold text-emerald-600 shadow-inner">
-                                {user.name.charAt(0)}
+                {/* Premium Header Card with Glassmorphism/Gradient */}
+                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 mb-10 shadow-xl shadow-slate-200/40 border border-slate-100 group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+
+                    <div className="relative flex flex-col sm:flex-row items-center gap-8 z-10">
+                        <div className="relative">
+                            <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-full flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-emerald-500/20 ring-4 ring-white">
+                                {user.name.charAt(0).toUpperCase()}
                             </div>
-                            <div className="overflow-hidden">
-                                <h3 className="font-bold text-gray-900 truncate">{user.name}</h3>
-                                <p className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">{user.role || 'User'}</p>
+                            <div className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full shadow-sm">
+                                <div className="bg-emerald-500 w-4 h-4 rounded-full border-2 border-white"></div>
                             </div>
                         </div>
 
-                        <nav className="space-y-1">
-                            <button className="w-full text-left px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium shadow-lg shadow-emerald-200 transition-all">
-                                Order History
-                            </button>
-                            <button className="w-full text-left px-4 py-2.5 text-gray-600 hover:bg-gray-50 rounded-xl text-sm transition-colors">
-                                Security Settings
-                            </button>
-                            <button
-                                onClick={logout}
-                                className="w-full text-left px-4 py-2.5 text-red-500 hover:bg-red-50 rounded-xl text-sm transition-colors mt-4 font-bold"
-                            >
-                                Terminate Session
-                            </button>
-                        </nav>
+                        <div className="flex-1 text-center sm:text-left space-y-2">
+                            <h1 className="text-3xl font-black text-slate-900 tracking-tight">{user.name}</h1>
+                            <p className="text-slate-500 font-medium">{user.email}</p>
+                            <div className="flex flex-wrap justify-center sm:justify-start gap-3 pt-1">
+                                <span className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                                    {user.role || 'Member'}
+                                </span>
+                                <span className="bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border border-emerald-100">
+                                    Verified
+                                </span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={logout}
+                            className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 hover:bg-rose-50 hover:text-rose-600 font-bold text-sm rounded-2xl transition-all duration-300 border border-slate-200 hover:border-rose-100 group/btn"
+                        >
+                            <LogOut size={18} className="group-hover/btn:scale-110 transition-transform" />
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                    {/* Left Column: Quick Stats & Actions */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg shadow-slate-200/30 hover:shadow-xl hover:shadow-slate-200/50 transition-shadow duration-300">
+                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 px-1">Default Address</h3>
+                            <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
+                                <div className="bg-white p-2.5 rounded-xl shadow-sm text-emerald-600">
+                                    <MapPin size={20} />
+                                </div>
+                                <p className="text-sm font-bold text-slate-700 leading-relaxed pt-1">
+                                    {user.address || "No address saved. Add one during your next checkout."}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg shadow-slate-200/30">
+                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 px-1">Settings</h3>
+                            <div className="space-y-3">
+                                {['Payment Methods', 'Notifications', 'Help & Support'].map((item) => (
+                                    <button key={item} className="w-full flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-all text-sm font-bold text-slate-700 group">
+                                        {item}
+                                        <ChevronRight size={16} className="text-slate-300 group-hover:text-emerald-500 transition-colors" />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Main Content */}
-                    <div className="md:col-span-3">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                <Package className="text-emerald-600" size={20} />
-                                Deployment History
+                    {/* Right Column: Order Feed */}
+                    <div className="lg:col-span-2">
+                        <div className="flex items-center justify-between mb-6 px-2">
+                            <h2 className="text-xl font-black text-slate-900 flex items-center gap-3">
+                                <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600">
+                                    <ShoppingBag size={20} />
+                                </div>
+                                Past Orders
                             </h2>
-                            <span className="text-[10px] font-mono text-gray-400 uppercase tracking-tighter">
-                                Total Orders: {orders.length}
+                            <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
+                                {orders.length} Orders
                             </span>
                         </div>
 
                         {loading ? (
-                            <div className="flex flex-col items-center justify-center p-20 gap-4">
-                                <Loader className="animate-spin text-emerald-600" size={32} />
-                                <span className="text-xs font-mono text-gray-400 animate-pulse">FETCHING_DATA...</span>
+                            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+                                <Loader2 className="animate-spin text-emerald-500 mb-4" size={40} />
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Syncing your history...</p>
                             </div>
                         ) : orders.length === 0 ? (
-                            <div className="bg-white border-2 border-dashed border-gray-100 p-12 rounded-3xl text-center">
-                                <Package size={48} className="mx-auto text-gray-200 mb-4" />
-                                <p className="text-gray-500 font-medium">No transactions found in database.</p>
-                                <button className="mt-4 text-emerald-600 font-bold text-sm hover:underline">Return to Market</button>
+                            <div className="bg-white p-16 rounded-[2rem] border border-slate-100 text-center shadow-sm">
+                                <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
+                                    <Package size={40} className="text-slate-300" />
+                                </div>
+                                <h3 className="text-2xl font-black text-slate-900 mb-2">No orders yet</h3>
+                                <p className="text-slate-500 text-sm font-medium mb-8 max-w-xs mx-auto">Your order history will appear here once you start shopping with us.</p>
+                                <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-10 py-4 rounded-2xl shadow-lg shadow-emerald-200 active:scale-95 transition-all">
+                                    Start Shopping
+                                </button>
                             </div>
                         ) : (
-                            <div className="grid gap-4">
+                            <div className="space-y-6">
                                 {orders.map((order) => (
-                                    <div key={order._id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:border-emerald-200 transition-colors group">
-                                        <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
+                                    <div key={order._id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg shadow-slate-200/20 hover:shadow-xl hover:shadow-slate-200/40 hover:-translate-y-1 transition-all duration-300 group cursor-pointer relative overflow-hidden">
+                                        {/* Status Line */}
+                                        <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                                        <div className="flex justify-between items-start mb-6">
                                             <div>
-                                                <p className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">Transaction ID</p>
-                                                <p className="text-sm font-bold text-gray-700">#{order._id.substring(0, 12)}</p>
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className={`flex h-2.5 w-2.5 rounded-full ${order.isPaid ? 'bg-emerald-500 shadow-md shadow-emerald-500/30' : 'bg-amber-500'}`}></span>
+                                                    <span className={`text-[11px] font-black uppercase tracking-widest ${order.isPaid ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                        {order.isPaid ? 'Delivered' : 'Pending'}
+                                                    </span>
+                                                </div>
+                                                <h4 className="font-bold text-slate-900 text-sm tracking-tight">
+                                                    Order <span className="font-mono text-slate-400">#</span>{order._id.substring(order._id.length - 6).toUpperCase()}
+                                                </h4>
                                             </div>
                                             <div className="text-right">
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${order.isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                                                    {order.isPaid ? 'Success' : 'Pending'}
-                                                </span>
-                                                <p className="text-[9px] text-gray-400 mt-1 font-mono">
-                                                    {new Date(order.createdAt).toLocaleDateString('en-GB')}
-                                                </p>
+                                                <p className="text-xl font-black text-slate-900 tracking-tight">${order.totalPrice.toFixed(2)}</p>
+                                                <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-bold justify-end mt-1">
+                                                    <Clock size={12} />
+                                                    {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                </div>
                                             </div>
                                         </div>
-                                        
-                                        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                                            {order.orderItems.map((item, index) => (
-                                                <div key={index} className="relative group/item shrink-0">
-                                                    <img 
-                                                        src={item.image} 
-                                                        className="w-14 h-14 rounded-xl object-cover border border-gray-50 bg-gray-50" 
-                                                        alt={item.name} 
+
+                                        {/* Items Strip */}
+                                        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-2 mask-linear">
+                                            {order.orderItems.map((item, idx) => (
+                                                <div key={idx} className="relative flex-shrink-0 group/item">
+                                                    <img
+                                                        src={item.image}
+                                                        alt={item.name}
+                                                        className="w-14 h-14 rounded-2xl object-cover bg-slate-50 border border-slate-100 group-hover/item:scale-105 transition-transform duration-300"
                                                     />
-                                                    <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold border border-white">
+                                                    <span className="absolute -top-2 -right-2 bg-slate-900 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                                                         {item.qty}
                                                     </span>
                                                 </div>
                                             ))}
                                         </div>
 
-                                        <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
-                                            <div className="flex items-center gap-2 text-gray-400">
-                                                <MapPin size={12} />
-                                                <span className="text-[10px] uppercase tracking-wide">{order.customerInfo.city}</span>
+                                        <div className="mt-6 pt-5 border-t border-slate-50 flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg">
+                                                <MapPin size={14} className="text-emerald-500" />
+                                                <span className="text-[11px] font-bold uppercase truncate max-w-[150px]">
+                                                    {order.customerInfo?.city || "Delivered"}
+                                                </span>
                                             </div>
-                                            <p className="font-mono text-lg font-black text-gray-900 tracking-tighter">
-                                                ${order.totalPrice.toFixed(2)}
-                                            </p>
+                                            <button className="text-emerald-600 font-bold text-xs hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-xl transition-colors">
+                                                View Receipt
+                                            </button>
                                         </div>
                                     </div>
                                 ))}

@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ProductCard from '../components/ProductCard';
-import { Filter, Search } from 'lucide-react';
+import { Search, ChevronRight } from 'lucide-react';
 
 const Shop = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [loading, setLoading] = useState(true);
-  const [visibleCount, setVisibleCount] = useState(8);
+  const [visibleCount, setVisibleCount] = useState(12); // Increased initial count for smaller cards
 
-  const categories = ['All', 'Vegetables', 'Fruits', 'Berries', 'Pantry'];
+  const categories = ['All', 'Vegetables', 'Fruits', 'Berries', 'Pantry', 'Millet Premix'];
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -28,7 +28,7 @@ const Shop = () => {
   }, []);
 
   useEffect(() => {
-    setVisibleCount(8); // Reset pagination when category changes
+    setVisibleCount(12);
     if (activeCategory === 'All') {
       setFilteredProducts(products);
     } else {
@@ -36,58 +36,67 @@ const Shop = () => {
     }
   }, [activeCategory, products]);
 
-  const handleShowMore = () => {
-    setVisibleCount(prev => prev + 8);
-  };
+  const handleShowMore = () => setVisibleCount(prev => prev + 12);
 
   const displayedProducts = filteredProducts.slice(0, visibleCount);
 
   return (
-    <div className="bg-gray-50 min-h-screen pt-24 pb-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-12">
+    <div className="bg-white min-h-screen pt-20 pb-12">
+      <div className="container mx-auto px-3 sm:px-6 lg:px-12">
 
-        {/* Header & Filter */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 sm:mb-10">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Shop Organic</h1>
-            <p className="text-sm sm:text-base text-gray-500 mt-1 sm:mt-2">Browse the freshest produce</p>
-          </div>
-
-          {/* <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-2 md:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${activeCategory === cat
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'bg-white text-gray-600 hover:bg-emerald-50 border border-gray-200'
-                  }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div> */}
+        {/* Search Bar - Zepto Style */}
+        <div className="sticky top-[72px] z-20 bg-white py-3 -mx-3 px-3 border-b border-gray-50 mb-4 sm:hidden">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <input 
+                    type="text" 
+                    placeholder="Search for organic groceries..." 
+                    className="w-full bg-gray-100 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500"
+                />
+            </div>
         </div>
 
-        {/* Grid */}
+        {/* Category Pills - Sticky & Compact */}
+        <div className="flex items-center gap-2 overflow-x-auto py-2 no-scrollbar mb-6 sticky top-0 sm:relative bg-white z-10">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
+                activeCategory === cat
+                  ? 'bg-emerald-50 border-emerald-600 text-emerald-700 shadow-sm'
+                  : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Product Grid - High Density */}
         {loading ? (
-          <div className="text-center py-20 text-emerald-600">Loading products...</div>
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+             <div className="w-10 h-10 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin"></div>
+             <p className="text-gray-400 text-sm font-medium">Fetching fresh produce...</p>
+          </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="flex flex-col gap-6">
+            {/* 2 columns on mobile, 6 on large desktop - True Zepto Style */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
               {displayedProducts.map(product => (
                 <ProductCard key={product._id} product={product} />
               ))}
             </div>
 
-            {/* Show More Button */}
+            {/* Pagination Button */}
             {visibleCount < filteredProducts.length && (
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-10">
                 <button
                   onClick={handleShowMore}
-                  className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-full hover:bg-gray-50 hover:border-emerald-200 hover:text-emerald-700 transition-all shadow-sm"
+                  className="group flex items-center gap-2 px-8 py-3 bg-white border border-gray-200 text-gray-900 font-bold text-sm rounded-xl hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all shadow-sm"
                 >
-                  Show More
+                  See more {activeCategory === 'All' ? 'products' : activeCategory}
+                  <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             )}
@@ -96,8 +105,12 @@ const Shop = () => {
 
         {/* Empty State */}
         {!loading && filteredProducts.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-gray-500 text-lg">No products found in this category.</p>
+          <div className="text-center py-32 border-2 border-dashed border-gray-100 rounded-3xl">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                 <Search size={32} className="text-gray-300" />
+            </div>
+            <p className="text-gray-900 font-bold">Item not found</p>
+            <p className="text-gray-400 text-sm mt-1">Try selecting a different category or search term.</p>
           </div>
         )}
       </div>

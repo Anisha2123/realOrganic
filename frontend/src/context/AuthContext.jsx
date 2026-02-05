@@ -56,8 +56,15 @@ export const AuthProvider = ({ children }) => {
         navigate('/');
     };
 
+    const updateUser = (userData) => {
+        // Merge existing user data with new updates (e.g. address)
+        const updatedUser = { ...user, ...userData };
+        setUser(updatedUser);
+        localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, loading, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

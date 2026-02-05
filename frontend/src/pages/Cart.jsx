@@ -1,184 +1,209 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import Button from '../components/ui/Button';
 import axios from 'axios';
-import { Trash2, Plus, Minus } from 'lucide-react';
+import { Trash2, Plus, Minus, ChevronRight, Clock, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+
 const Cart = () => {
   const { cart, removeFromCart, addToCart, clearCart } = useShop();
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth(); // Get logged-in user details
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const total = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
+  const itemsPrice = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
+  const taxPrice = itemsPrice * 0.1;
+  const shippingPrice = 5.00;
+  const grandTotal = itemsPrice + taxPrice + shippingPrice;
 
-const handleCheckout = async () => {
-  if (!user) {
-    alert("Please login to checkout");
-    return navigate('/login');
-  }
+  const handleCheckout = async () => {
+    if (!user) {
+      return navigate('/login', { state: { from: '/cart' } });
+    }
 
-  // DEBUG LOG 1: Check raw cart data
-  console.log("DEBUG: Raw Cart State:", cart);
+    setLoading(true);
+    try {
+      const { data: orderData } = await axios.post('/api/orders/payment', { 
+        amount: grandTotal 
+      });
+      
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "RealOrganic",
+        description: "Purchase Transaction",
+        order_id: orderData.id,
+        handler: async (response) => {
+          
+          // FIX 1: Ensure product ID mapping is correct for MongoDB ObjectId
+          const mappedItems = cart.map(item => ({
+            name: item.name,
+            qty: item.qty,
+            image: item.image,
+            price: item.price,
+            product: item._id || item.product 
+          }));
 
-  setLoading(true);
-  try {
-    const { data: orderData } = await axios.post('/api/orders/payment', { 
-      amount: total * 1.1 + 5.00 
-    });
-    
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount: orderData.amount,
-      currency: orderData.currency,
-      name: "RealOrganic",
-      description: "Purchase Transaction",
-      order_id: orderData.id,
-      handler: async (response) => {
-        
-        // DEBUG LOG 2: Check mapped order items before sending to backend
-        const mappedItems = cart.map(item => ({
-          name: item.name,
-          qty: item.qty,
-          image: item.image,
-          price: item.price,
-          product: item._id || item.product 
-        }));
-        console.log("DEBUG: Mapped Order Items:", mappedItems);
+          // FIX 2: Restore original PaymentData payload structure
+          const paymentData = {
+            orderItems: mappedItems,
+            itemsPrice: itemsPrice,
+            taxPrice: taxPrice,
+            shippingPrice: shippingPrice,
+            totalPrice: grandTotal,
+            paymentResult: {
+              id: response.razorpay_payment_id,
+              order_id: response.razorpay_order_id,    // Added back
+              signature: response.razorpay_signature, // Added back
+              status: 'paid',
+              update_time: new Date().toISOString(),
+            },
+            customerInfo: {
+              name: user.name,
+              email: user.email,
+              userId: user._id,
+              address: user.address || "123 Default St", 
+              city: user.city || "Green City",
+              zip: user.zip || "000000"
+            }
+          };
 
-        const paymentData = {
-          orderItems: mappedItems,
-          itemsPrice: total,
-          taxPrice: total * 0.1,
-          shippingPrice: 5.00,
-          totalPrice: total * 1.1 + 5.00,
-          paymentResult: {
-            id: response.razorpay_payment_id,
-            order_id: response.razorpay_order_id,
-            signature: response.razorpay_signature,
-            status: 'paid',
-            update_time: new Date().toISOString(),
-          },
-          customerInfo: {
-            name: user.name,
-            email: user.email,
-            userId: user._id,
-            address: user.address || "123 Default St", 
-            city: user.city || "Green City",
-            zip: user.zip || "000000"
+          const config = {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          };
+          
+          try {
+            await axios.post('/api/orders', paymentData, config);
+            clearCart();
+            navigate('/profile'); 
+          } catch (err) {
+            console.error("Order saving failed:", err.response?.data || err.message);
+            alert("Payment successful, but order failed to save in Database.");
           }
-        };
+        },
+        prefill: { name: user.name, email: user.email },
+        theme: { color: "#059669" },
+      };
 
-        // DEBUG LOG 3: Check full payload
-        console.log("DEBUG: Full PaymentData Payload:", paymentData);
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
+    } catch (error) {
+      console.error("Payment initialization failed", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const config = {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        };
-        
-        try {
-          await axios.post('/api/orders', paymentData, config);
-          clearCart();
-          navigate('/profile'); 
-        } catch (err) {
-          console.error("Order saving failed:", err.response?.data || err.message);
-          alert("Payment successful, but order failed to save.");
-        }
-      },
-      prefill: { name: user.name, email: user.email },
-      theme: { color: "#10b981" },
-    };
-
-    const rzp1 = new window.Razorpay(options);
-    rzp1.open();
-  } catch (error) {
-    console.error("Payment initialization failed", error);
-  } finally {
-    setLoading(false);
-  }
-};
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen pt-24 pb-12 flex flex-col items-center justify-center text-center px-4">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Cart is Empty</h2>
-        <Button onClick={() => navigate('/shop')}>Go Shopping</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white antialiased">
+        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+          <ShoppingBag className="text-gray-200" size={32} />
+        </div>
+        <h2 className="text-lg font-semibold text-gray-900">Your cart is empty</h2>
+        <button 
+          onClick={() => navigate('/shop')}
+          className="mt-4 text-emerald-600 font-semibold text-sm hover:underline"
+        >
+          Go to Shop
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen pt-24 pb-12">
-      <div className="container mx-auto px-6 lg:px-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-6">
-            {cart.map((item) => (
-              <div key={item._id} className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-4">
-                <img src={item.image} alt={item.name} className="w-20 h-20 rounded-xl object-cover bg-gray-100" />
-
-                <div className="flex-grow">
-                  <h3 className="font-bold text-gray-900 text-lg">{item.name}</h3>
-                  <p className="text-emerald-600 font-medium">${item.price}</p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <button className="p-1 rounded-full bg-gray-100 hover:bg-gray-200" onClick={() => addToCart(item, -1)} disabled={item.qty <= 1}>
-                    <Minus size={16} />
-                  </button>
-                  <span className="font-bold w-4 text-center">{item.qty}</span>
-                  <button className="p-1 rounded-full bg-gray-100 hover:bg-gray-200" onClick={() => addToCart(item, 1)}>
-                    <Plus size={16} />
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => removeFromCart(item._id)}
-                  className="text-gray-400 hover:text-red-500 p-2"
-                >
-                  <Trash2 size={20} />
-                </button>
+    <div className="bg-[#F8F9FA] min-h-screen pt-24 pb-32 antialiased">
+      <div className="container mx-auto px-4 max-w-5xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          <div className="lg:col-span-7 space-y-4">
+            <div className="bg-white p-4 rounded-2xl flex items-center gap-4 border border-emerald-50 shadow-sm">
+              <div className="bg-emerald-50 p-2 rounded-lg text-emerald-600">
+                <Clock size={20} />
               </div>
-            ))}
-          </div>
-
-          {/* Order Summary */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm h-fit">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h3>
-
-            <div className="space-y-4 mb-6 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Subtotal</span>
-                <span className="font-bold text-gray-900">${total.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Tax (10%)</span>
-                <span className="font-bold text-gray-900">${(total * 0.1).toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Shipping</span>
-                <span className="font-bold text-gray-900">$5.00</span>
-              </div>
-              <div className="border-t border-gray-100 pt-4 flex justify-between text-lg">
-                <span className="font-bold text-gray-900">Total</span>
-                <span className="font-bold text-emerald-600">${(total * 1.1 + 5).toFixed(2)}</span>
-              </div>
+              <p className="text-sm font-semibold text-gray-900">Delivery in 10-15 minutes</p>
             </div>
 
-            <Button
-              variant="primary"
-              className="w-full"
-              onClick={handleCheckout}
-              disabled={loading}
-            >
-              {loading ? 'Processing...' : 'Checkout'}
-            </Button>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              {cart.map((item, index) => (
+                <div key={item._id} className={`p-4 flex items-center gap-4 ${index !== cart.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                  <div className="w-16 h-16 bg-gray-50 rounded-xl overflow-hidden shrink-0">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
+                  </div>
+
+                  <div className="flex-grow">
+                    <h3 className="text-sm font-semibold text-gray-900 leading-tight">{item.name}</h3>
+                    <p className="text-[11px] text-gray-400 font-medium mt-0.5">Organic • 500g</p>
+                    <p className="text-sm font-bold text-gray-900 mt-1">${item.price}</p>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-3">
+                    <div className="flex items-center gap-3 border border-gray-100 rounded-lg px-2 py-1">
+                      <button onClick={() => addToCart(item, -1)} className="text-gray-400 hover:text-emerald-600"><Minus size={12}/></button>
+                      <span className="text-xs font-bold w-4 text-center">{item.qty}</span>
+                      <button onClick={() => addToCart(item, 1)} className="text-gray-400 hover:text-emerald-600"><Plus size={12}/></button>
+                    </div>
+                    <button onClick={() => removeFromCart(item._id)} className="text-gray-300 hover:text-red-500"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-5">
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm sticky top-28">
+              <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6">Bill Summary</h3>
+              
+              <div className="space-y-4 text-sm font-medium">
+                <div className="flex justify-between text-gray-500">
+                  <span>Item Total</span>
+                  <span className="text-gray-900">${itemsPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-500">
+                  <span>Shipping</span>
+                  <span className="text-gray-900">${shippingPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-500">
+                  <span>Taxes (10%)</span>
+                  <span className="text-gray-900">${taxPrice.toFixed(2)}</span>
+                </div>
+                
+                <div className="border-t border-gray-50 pt-4 flex justify-between items-center">
+                  <span className="text-sm font-bold text-gray-900">Total to Pay</span>
+                  <span className="text-xl font-bold text-gray-900 tracking-tighter">${grandTotal.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleCheckout}
+                disabled={loading}
+                className="hidden lg:flex mt-8 w-full bg-emerald-600 text-white items-center justify-center gap-2 py-4 rounded-xl font-semibold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-50"
+              >
+                {loading ? 'Processing...' : 'Place Order'}
+                <ChevronRight size={18} />
+              </button>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40">
+        <button 
+          onClick={handleCheckout}
+          disabled={loading}
+          className="w-full bg-emerald-600 text-white flex items-center justify-between px-6 py-4 rounded-2xl font-semibold shadow-xl shadow-emerald-50"
+        >
+          <div className="text-left">
+            <p className="text-lg font-bold">${grandTotal.toFixed(2)}</p>
+          </div>
+          <div className="flex items-center gap-1">
+            {loading ? 'Processing...' : 'Place Order'}
+            <ChevronRight size={20} />
+          </div>
+        </button>
       </div>
     </div>
   );

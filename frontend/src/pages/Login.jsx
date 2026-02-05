@@ -3,16 +3,30 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 
+import { useNavigate, useLocation } from 'react-router-dom';
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const { login } = useAuth();
+    
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // 1. Check if the user came from a specific page (like /cart)
+    const from = location.state?.from || '/';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(''); // Clear previous errors
+        
         const res = await login(email, password);
-        if (!res.success) {
+        
+        if (res.success) {
+            // 2. Redirect back to where they came from
+            navigate(from, { replace: true });
+        } else {
             setError(res.message);
         }
     };

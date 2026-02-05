@@ -19,7 +19,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import About from './pages/About';
-
+import "./App.css"
 function App() {
   return (
     <div className="flex flex-col min-h-screen">

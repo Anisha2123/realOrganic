@@ -31,13 +31,14 @@ const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Mount Routes
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/auth', authRoutes);
-
+app.use('/api/user', userRoutes);
 
 
 app.post('/api/webhook/razorpay', express.raw({ type: 'application/json' }), async (req, res) => {

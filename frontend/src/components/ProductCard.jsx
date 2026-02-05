@@ -1,91 +1,105 @@
 import React from 'react';
-import { ShoppingCart, Heart, Star } from 'lucide-react';
+import { Heart, Star, Plus, Minus } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
+import { Link } from 'react-router-dom'; // Added Link
+import "../App.css";
 
 const ProductCard = ({ product }) => {
-  const { toggleWishlist, wishlist, addToCart } = useShop();
+  const { toggleWishlist, wishlist, addToCart, cart } = useShop();
   
+  const cartItem = cart.find(item => item._id === product._id);
   const isWishlisted = wishlist.some(p => p._id === product._id);
 
   return (
-    <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-xl transition-all duration-300 group relative border border-gray-100 flex flex-row sm:flex-col gap-4 sm:gap-0 items-center sm:items-stretch h-auto sm:h-full">
-      {/* Badge */}
-      {product.badge && (
-        <span className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-amber-500 text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full z-10">
-          {product.badge}
-        </span>
-      )}
-
-      {/* Image Container */}
-      <div className="relative w-28 h-28 sm:w-full sm:h-48 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 sm:mb-4">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        {/* Quick Actions (only visible on desktop/tablet hover or always accessible via layout if needed, but keeping consistent) */}
-        <div className="absolute top-2 right-2 hidden sm:flex flex-col gap-2 z-10">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              toggleWishlist(product);
-            }}
-            className={`p-2 rounded-full shadow-md transition-colors ${isWishlisted ? 'bg-red-50 text-red-500' : 'bg-white text-gray-500 hover:text-red-500'
-              }`}
-          >
-            <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
-          </button>
-        </div>
+    <div className="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 flex flex-col h-full group relative">
+      
+      {/* 1. Top Section: Wishlist (Stays clickable without navigating) */}
+      <div className="absolute top-2 right-2 z-20">
+        <button
+          onClick={(e) => {
+            e.preventDefault(); // Prevents navigation
+            e.stopPropagation(); // Prevents event bubbling
+            toggleWishlist(product);
+          }}
+          className={`p-1.5 rounded-full transition-colors ${
+            isWishlisted ? 'text-red-500' : 'text-gray-300 hover:text-red-400'
+          }`}
+        >
+          <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
+        </button>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 space-y-1 sm:space-y-2 w-full">
-        <div className="flex items-start justify-between">
-          <div>
-            <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 uppercase tracking-wide">
+      {product.badge && (
+        <div className="absolute top-0 left-0 bg-emerald-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-tl-xl rounded-br-xl z-10 uppercase tracking-tighter">
+          {product.badge}
+        </div>
+      )}
+
+      {/* 2. Link Wrapper: Only wraps the image and text */}
+      <Link to={`/product/${product._id}`} className="flex flex-col flex-1 cursor-pointer">
+        <div className="relative w-full aspect-square mb-2 flex items-center justify-center bg-gray-50/50 rounded-lg overflow-hidden">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-4/5 h-4/5 object-contain group-hover:scale-105 transition-transform duration-500"
+          />
+        </div>
+
+        <div className="flex flex-col flex-1">
+          <div className="flex items-center gap-1 mb-1">
+             <div className="flex items-center text-[10px] text-gray-500 font-medium bg-gray-100 px-1.5 py-0.5 rounded">
+              <Star size={10} className="text-amber-500 mr-0.5" fill="currentColor" />
+              {product.rating}
+            </div>
+            <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">
               {product.category}
             </span>
-            <h3 className="text-gray-900 font-bold text-sm sm:text-lg leading-tight group-hover:text-emerald-700 transition-colors line-clamp-2">
-              {product.name}
-            </h3>
           </div>
-          {/* Mobile Wishlist Button */}
+
+          <h3 className="text-[#1A1A1A] text-[13px] leading-[18px] font-medium line-clamp-2 h-9 mb-1 tracking-tight group-hover:text-emerald-700 transition-colors">
+            {product.name}
+          </h3>
+        </div>
+      </Link>
+
+      {/* 3. Bottom Section: Price & Buttons (Outside the Link for button safety) */}
+      <div className="mt-auto pt-2 flex items-center justify-between relative z-20">
+        <div className="flex flex-col">
+          <span className="text-sm font-bold text-gray-900">₹{product.price}</span>
+        </div>
+
+        {cartItem ? (
+          <div className="flex items-center gap-3 bg-emerald-600 text-white px-2 py-1 rounded-lg shadow-sm">
+            <button 
+              onClick={(e) => { e.preventDefault(); addToCart(product, -1); }}
+              className="hover:bg-emerald-700 p-0.5 rounded transition-colors"
+            >
+              <Minus size={14} strokeWidth={3} />
+            </button>
+            
+            <span className="text-xs font-bold w-4 text-center">
+              {cartItem.qty}
+            </span>
+
+            <button 
+              onClick={(e) => { e.preventDefault(); addToCart(product, 1); }}
+              className="hover:bg-emerald-700 p-0.5 rounded transition-colors"
+            >
+              <Plus size={14} strokeWidth={3} />
+            </button>
+          </div>
+        ) : (
           <button
             onClick={(e) => {
-              e.preventDefault();
-              toggleWishlist(product);
+              e.preventDefault(); // Prevents Link navigation
+              addToCart(product, 1);
             }}
-            className={`sm:hidden p-1.5 rounded-full shadow-sm border border-gray-100 transition-colors ${isWishlisted ? 'bg-red-50 text-red-500' : 'bg-white text-gray-400'}`}
+            className="flex items-center justify-center gap-1 border border-emerald-600 text-emerald-600 bg-white hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded-lg transition-all duration-200 font-bold text-[11px] shadow-sm active:scale-95"
           >
-            <Heart size={14} fill={isWishlisted ? "currentColor" : "none"} />
+            ADD
+            <Plus size={13} strokeWidth={3} />
           </button>
-        </div>
-
-        {/* Rating - Hidden on very small screens if needed, or kept small */}
-        <div className="flex items-center gap-1 text-amber-500 text-[10px] sm:text-xs font-bold bg-amber-50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md w-fit">
-          <Star size={10} className="sm:w-3 sm:h-3" fill="currentColor" />
-          <span>{product.rating}</span>
-        </div>
-
-        <p className="hidden sm:block text-sm text-gray-500 line-clamp-2">
-          {product.description}
-        </p>
-
-        <div className="flex items-center justify-between pt-1 sm:pt-2 mt-auto">
-          <div className="flex flex-col">
-            <span className="hidden sm:block text-xs text-gray-400 font-medium">Price</span>
-            <span className="text-lg sm:text-xl font-bold text-gray-900">${product.price}</span>
-          </div>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              addToCart(product);
-            }}
-            className="bg-emerald-100 text-emerald-700 p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-emerald-600 hover:text-white transition-all duration-300"
-          >
-            <ShoppingCart size={18} className="sm:w-5 sm:h-5" />
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );
