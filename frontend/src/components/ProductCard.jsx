@@ -4,7 +4,7 @@ import { useShop } from '../context/ShopContext';
 
 const ProductCard = ({ product }) => {
   const { toggleWishlist, wishlist, addToCart } = useShop();
-
+  
   const isWishlisted = wishlist.some(p => p._id === product._id);
 
   return (

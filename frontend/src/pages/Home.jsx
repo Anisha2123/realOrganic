@@ -90,7 +90,7 @@ const Home = () => {
               <span className="text-amber-400 font-bold uppercase tracking-wider mb-2 block">Special Offer</span>
               <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">Get 50% Off On All Vegetables</h2>
               <p className="text-emerald-100 text-lg mb-8 max-w-md">Join the organic movement today and start eating healthy for a better tomorrow.</p>
-              <button className="bg-white text-emerald-900 px-8 py-3 rounded-full font-bold hover:bg-amber-400 transition-colors duration-300">
+              <button onClick={() => navigate('/shop')} className="bg-white text-emerald-900 px-8 py-3 rounded-full font-bold hover:bg-amber-400 transition-colors duration-300">
                 Shop Now
               </button>
             </div>

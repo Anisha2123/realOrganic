@@ -65,7 +65,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-6">
             <button className="text-gray-600 hover:text-emerald-600 transition-colors">
               <Search size={22} />
-            </button>
+             </button>
 
             <Link to="/wishlist" className="text-gray-600 hover:text-emerald-600 transition-colors relative">
               <Heart size={22} />

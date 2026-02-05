@@ -36,7 +36,7 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button variant="primary" className="group">
+              <Button onClick={() => navigate('/shop')} variant="primary" className="group">
                 Shop Now
                 <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>

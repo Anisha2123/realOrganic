@@ -4,58 +4,102 @@ import Button from '../components/ui/Button';
 import axios from 'axios';
 import { Trash2, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
+import { useAuth } from '../context/AuthContext';
 const Cart = () => {
   const { cart, removeFromCart, addToCart, clearCart } = useShop();
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth(); // Get logged-in user details
   const navigate = useNavigate();
 
   const total = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
 
-  const handleCheckout = async () => {
-    setLoading(true);
-    try {
-      // 1. Create Razorpay Order on your Backend
-      const { data: orderData } = await axios.post('/api/orders/payment', { amount: total * 1.1 + 5.00 });
+const handleCheckout = async () => {
+  if (!user) {
+    alert("Please login to checkout");
+    return navigate('/login');
+  }
 
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Enter the Key ID generated from Dashboard
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "RealOrganic",
-        description: "Purchase Transaction",
-        order_id: orderData.id,
-        handler: async (response) => {
-          // This runs after successful payment
-          const paymentData = {
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            orderItems: cart,
-            totalPrice: total * 1.1 + 5.00,
-          };
+  // DEBUG LOG 1: Check raw cart data
+  console.log("DEBUG: Raw Cart State:", cart);
 
-          // 2. Save the final order in your Database
-          await axios.post('/api/orders', paymentData);
+  setLoading(true);
+  try {
+    const { data: orderData } = await axios.post('/api/orders/payment', { 
+      amount: total * 1.1 + 5.00 
+    });
+    
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: orderData.amount,
+      currency: orderData.currency,
+      name: "RealOrganic",
+      description: "Purchase Transaction",
+      order_id: orderData.id,
+      handler: async (response) => {
+        
+        // DEBUG LOG 2: Check mapped order items before sending to backend
+        const mappedItems = cart.map(item => ({
+          name: item.name,
+          qty: item.qty,
+          image: item.image,
+          price: item.price,
+          product: item._id || item.product 
+        }));
+        console.log("DEBUG: Mapped Order Items:", mappedItems);
+
+        const paymentData = {
+          orderItems: mappedItems,
+          itemsPrice: total,
+          taxPrice: total * 0.1,
+          shippingPrice: 5.00,
+          totalPrice: total * 1.1 + 5.00,
+          paymentResult: {
+            id: response.razorpay_payment_id,
+            order_id: response.razorpay_order_id,
+            signature: response.razorpay_signature,
+            status: 'paid',
+            update_time: new Date().toISOString(),
+          },
+          customerInfo: {
+            name: user.name,
+            email: user.email,
+            userId: user._id,
+            address: user.address || "123 Default St", 
+            city: user.city || "Green City",
+            zip: user.zip || "000000"
+          }
+        };
+
+        // DEBUG LOG 3: Check full payload
+        console.log("DEBUG: Full PaymentData Payload:", paymentData);
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        };
+        
+        try {
+          await axios.post('/api/orders', paymentData, config);
           clearCart();
-          navigate('/profile'); // Redirect to profile to see the order
-        },
-        prefill: {
-          name: "Guest User",
-          email: "guest@example.com",
-        },
-        theme: { color: "#10b981" }, // Emerald-600
-      };
+          navigate('/profile'); 
+        } catch (err) {
+          console.error("Order saving failed:", err.response?.data || err.message);
+          alert("Payment successful, but order failed to save.");
+        }
+      },
+      prefill: { name: user.name, email: user.email },
+      theme: { color: "#10b981" },
+    };
 
-      const rzp1 = new window.Razorpay(options);
-      rzp1.open();
-    } catch (error) {
-      console.error("Payment failed", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    const rzp1 = new window.Razorpay(options);
+    rzp1.open();
+  } catch (error) {
+    console.error("Payment initialization failed", error);
+  } finally {
+    setLoading(false);
+  }
+};
   if (cart.length === 0) {
     return (
       <div className="min-h-screen pt-24 pb-12 flex flex-col items-center justify-center text-center px-4">
