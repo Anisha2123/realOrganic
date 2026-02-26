@@ -20,7 +20,7 @@ const LocationModal = ({ isOpen, onClose, onSelect }) => {
       try {
         // Replace YOUR_API_KEY with your actual Google API Key
         const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=YOUR_API_KEY`
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyDJ7DcBQFqSbvs4xkUJh32wH_bCJi8UnHA`
         );
         const data = await response.json();
 

@@ -3,6 +3,9 @@ import ProductCard from '../components/ProductCard';
 import Hero from '../components/Hero';
 import { Truck, ShieldCheck, Leaf, Phone } from 'lucide-react';
 import Shop from './Shop';
+import HomeCategories from '../components/HomeCategories';
+import { useNavigate } from 'react-router-dom';
+
 const Home = () => {
   // Mock data for design demonstration
   const mockProducts = [
@@ -54,11 +57,12 @@ const Home = () => {
     { icon: <Leaf size={32} />, title: '100% Organic', desc: 'Certified organic products' },
     { icon: <Phone size={32} />, title: '24/7 Support', desc: 'Dedicated support team' },
   ];
-
+     const navigate = useNavigate();
   return (
-    <div className="bg-white min-h-screen">
-      {/* <Hero /> */}
 
+    <div className="bg-white min-h-screen">
+      <Hero />
+      <HomeCategories />
       {/* Features Section */}
       {/* <section className="py-10 bg-white">
         <div className="container mx-auto px-6 lg:px-12">
@@ -90,7 +94,8 @@ const Home = () => {
               <span className="text-amber-400 font-bold uppercase tracking-wider mb-2 block">Special Offer</span>
               <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">Get 50% Off On All Vegetables</h2>
               <p className="text-emerald-100 text-lg mb-8 max-w-md">Join the organic movement today and start eating healthy for a better tomorrow.</p>
-              <button onClick={() => navigate('/shop')} className="bg-white text-emerald-900 px-8 py-3 rounded-full font-bold hover:bg-amber-400 transition-colors duration-300">
+              <button onClick={() => navigate(`/shop`)} 
+              className="bg-white text-emerald-900 px-8 py-3 rounded-full font-bold hover:bg-amber-400 transition-colors duration-300">
                 Shop Now
               </button>
             </div>

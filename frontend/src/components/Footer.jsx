@@ -35,41 +35,58 @@ const Footer = () => {
               <FooterLink to="/" text="Home" />
               <FooterLink to="/shop" text="Shop" />
               <FooterLink to="/about" text="About Us" />
-              <FooterLink to="/contact" text="Contact" />
-              <FooterLink to="/blog" text="Blog" />
+              {/* <FooterLink to="/contact" text="Contact" /> */}
+              {/* <FooterLink to="/blog" text="Blog" /> */}
             </ul>
           </div>
 
           {/* Categories */}
-          <div>
-            <h4 className="text-lg font-bold mb-6">Categories</h4>
-            <ul className="space-y-4">
-              <FooterLink to="/shop?cat=vegetables" text="Vegetables" />
-              <FooterLink to="/shop?cat=fruits" text="Fresh Fruits" />
-              <FooterLink to="/shop?cat=drinks" text="Organic Drinks" />
-              <FooterLink to="/shop?cat=bakery" text="Bakery" />
-              <FooterLink to="/shop?cat=spices" text="Spices" />
-            </ul>
-          </div>
+<div>
+  <h4 className="text-lg font-bold mb-6">Categories</h4>
+  <ul className="space-y-4">
+    <FooterLink to="/shop?category=Ayurvedicproducts" text="Ayurvedic products" />
+    <FooterLink to="/shop?category=Millets" text="Millets" />
+    <FooterLink to="/shop?category=Coir" text="Coir" />
+    <FooterLink to="/shop?category=Herbals" text="Herbals" />
+  </ul>
+</div>
 
           {/* Contact */}
-          <div>
-            <h4 className="text-lg font-bold mb-6">Contact Us</h4>
-            <ul className="space-y-6">
-              <li className="flex items-start gap-4 text-emerald-200/80 hover:text-white transition-colors">
-                <MapPin className="shrink-0 text-emerald-500" size={20} />
-                <span>123 Organic Lane, Green City, Earth 10101</span>
-              </li>
-              <li className="flex items-center gap-4 text-emerald-200/80 hover:text-white transition-colors">
-                <Phone className="shrink-0 text-emerald-500" size={20} />
-                <span>+1 (234) 567-890</span>
-              </li>
-              <li className="flex items-center gap-4 text-emerald-200/80 hover:text-white transition-colors">
-                <Mail className="shrink-0 text-emerald-500" size={20} />
-                <span>support@realorganic.com</span>
-              </li>
-            </ul>
-          </div>
+        <div>
+  <h4 className="text-lg font-bold mb-6">Contact Us</h4>
+  <ul className="space-y-6">
+
+    {/* Address */}
+    <li className="flex items-start gap-4 text-emerald-200/80 hover:text-white transition-colors">
+      <MapPin className="shrink-0 text-emerald-500" size={20} />
+      <a
+        href="https://www.google.com/maps/search/?api=1&query=G95P+G5V+Nizampet+Hyderabad+Telangana+500085"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:underline"
+      >
+        G95P+G5V, Nizampet Rd, E Block, Nizampet, Hyderabad, Telangana 500085
+      </a>
+    </li>
+
+    {/* Phone */}
+    <li className="flex items-center gap-4 text-emerald-200/80 hover:text-white transition-colors">
+      <Phone className="shrink-0 text-emerald-500" size={20} />
+      <a href="tel:+918179988139" className="hover:underline">
+        +91 8179988139
+      </a>
+    </li>
+
+    {/* Email */}
+    <li className="flex items-center gap-4 text-emerald-200/80 hover:text-white transition-colors">
+      <Mail className="shrink-0 text-emerald-500" size={20} />
+      <a href="mailto:realorganic567@gmail.com" className="hover:underline">
+        realorganic567@gmail.com
+      </a>
+    </li>
+
+  </ul>
+</div>
 
         </div>
 

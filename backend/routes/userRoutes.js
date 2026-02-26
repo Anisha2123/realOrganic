@@ -6,6 +6,7 @@ const { protect } = require('../middleware/authMiddleware');
 
 // backend/routes/userRoutes.js
 router.patch('/address', protect, async (req, res) => {
+  console.log(`address api started`);
   try {
     const user = await User.findById(req.user._id);
 

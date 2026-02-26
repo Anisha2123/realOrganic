@@ -86,6 +86,7 @@ router.post('/', protect, async (req, res) => {
             isPaid: true,
             paidAt: Date.now(),
         });
+        console.log(`customer info is ${customerInfo}`);
 
         const createdOrder = await order.save();
         res.status(201).json(createdOrder);

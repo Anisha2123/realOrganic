@@ -4,8 +4,10 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    phone: { type: String, required: true, unique: true }, // Added phone
     password: { type: String, required: true },
     isAdmin: { type: Boolean, required: true, default: false },
+    firebaseUid: { type: String } // Proof of OTP verification
 }, { timestamps: true });
 
 // Hash password before saving

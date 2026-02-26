@@ -20,6 +20,27 @@ const Cart = () => {
     if (!user) {
       return navigate('/login', { state: { from: '/cart' } });
     }
+    const savedLocation = JSON.parse(
+  localStorage.getItem("realOrganic_location")
+);
+   if (!savedLocation) {
+  alert("Please select delivery location before checkout.");
+  setLoading(false);
+  return;
+}
+const extractZip = (address) => {
+  const match = address?.match(/\b\d{6}\b/);
+  return match ? match[0] : null;
+};
+const zipCode = extractZip(savedLocation.full);
+
+if (!zipCode) {
+  alert("Pincode not found in selected address.");
+  setLoading(false);
+  return;
+}
+console.log(`zipCode is ${zipCode}`);
+ console.log(savedLocation);
 
     setLoading(true);
     try {
@@ -61,13 +82,16 @@ const Cart = () => {
             },
             customerInfo: {
               name: user.name,
-              email: user.email,
+              // email: user.email,
               userId: user._id,
-              address: user.address || "123 Default St", 
-              city: user.city || "Green City",
-              zip: user.zip || "000000"
+              address: savedLocation?.full || "Address not selected",
+              city: savedLocation?.short || "",
+              zip: savedLocation?.zipCode || "",
             }
+            
           };
+          console.log(paymentData);
+          
 
           const config = {
             headers: {
@@ -137,7 +161,7 @@ const Cart = () => {
                   <div className="flex-grow">
                     <h3 className="text-sm font-semibold text-gray-900 leading-tight">{item.name}</h3>
                     <p className="text-[11px] text-gray-400 font-medium mt-0.5">Organic • 500g</p>
-                    <p className="text-sm font-bold text-gray-900 mt-1">${item.price}</p>
+                    <p className="text-sm font-bold text-gray-900 mt-1">₹ {item.price}</p>
                   </div>
 
                   <div className="flex flex-col items-end gap-3">
@@ -160,20 +184,20 @@ const Cart = () => {
               <div className="space-y-4 text-sm font-medium">
                 <div className="flex justify-between text-gray-500">
                   <span>Item Total</span>
-                  <span className="text-gray-900">${itemsPrice.toFixed(2)}</span>
+                  <span className="text-gray-900">₹ {itemsPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-500">
                   <span>Shipping</span>
-                  <span className="text-gray-900">${shippingPrice.toFixed(2)}</span>
+                  <span className="text-gray-900">₹ {shippingPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-500">
                   <span>Taxes (10%)</span>
-                  <span className="text-gray-900">${taxPrice.toFixed(2)}</span>
+                  <span className="text-gray-900">₹ {taxPrice.toFixed(2)}</span>
                 </div>
                 
                 <div className="border-t border-gray-50 pt-4 flex justify-between items-center">
                   <span className="text-sm font-bold text-gray-900">Total to Pay</span>
-                  <span className="text-xl font-bold text-gray-900 tracking-tighter">${grandTotal.toFixed(2)}</span>
+                  <span className="text-xl font-bold text-gray-900 tracking-tighter">₹ {grandTotal.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -197,7 +221,7 @@ const Cart = () => {
           className="w-full bg-emerald-600 text-white flex items-center justify-between px-6 py-4 rounded-2xl font-semibold shadow-xl shadow-emerald-50"
         >
           <div className="text-left">
-            <p className="text-lg font-bold">${grandTotal.toFixed(2)}</p>
+            <p className="text-lg font-bold">₹ {grandTotal.toFixed(2)}</p>
           </div>
           <div className="flex items-center gap-1">
             {loading ? 'Processing...' : 'Place Order'}

@@ -3,17 +3,54 @@ const router = express.Router();
 const Product = require('../models/Product');
 
 // @desc    Fetch all products
-// @route   GET /api/products
 router.get('/', async (req, res) => {
-    try {
-        const category = req.query.category;
-        const query = category ? { category } : {};
-        const products = await Product.find(query);
-        console.log(`📦 Fetched ${products.length} products. Filter: ${category || 'None'}`);
-        res.json(products);
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
+    console.log(`products api reached !`);
+  try {
+    const { category, subCategory, search, sort } = req.query;
+
+    let filter = {};
+
+    // 🔹 Category filter (case insensitive)
+    if (category && category !== "All") {
+      filter.category = { $regex: category, $options: "i" };
     }
+
+    // 🔹 SubCategory filter
+    if (subCategory) {
+      filter.subCategory = { $regex: subCategory, $options: "i" };
+    }
+
+    // 🔹 Search by product name
+    if (search) {
+      filter.name = { $regex: search, $options: "i" };
+    }
+
+    let sortOption = {};
+
+    // 🔹 Sorting
+    if (sort === "price_low") {
+      sortOption.price = 1;
+    } else if (sort === "price_high") {
+      sortOption.price = -1;
+    } else if (sort === "rating") {
+      sortOption.rating = -1;
+    } else {
+      sortOption.createdAt = -1; // default newest first
+    }
+
+    const products = await Product.find(filter).sort(sortOption);
+
+    console.log(
+      `📦 Fetched ${products.length} products | Category: ${
+        category || "All"
+      } | SubCategory: ${subCategory || "None"}`
+    );
+
+    res.json(products);
+  } catch (error) {
+    console.error("❌ Product fetch error:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
 });
 
 // @desc    Fetch single product

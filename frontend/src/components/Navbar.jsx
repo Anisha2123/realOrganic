@@ -137,7 +137,7 @@ const Navbar = () => {
                           <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">500g</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-gray-900">${product.price}</p>
+                          <p className="text-sm font-bold text-gray-900">₹ {product.price}</p>
                           <p className="text-[10px] font-black text-emerald-600 uppercase">View</p>
                         </div>
                       </Link>
@@ -173,7 +173,7 @@ const Navbar = () => {
               </div>
               <div className="hidden lg:flex flex-col items-start leading-none">
                 <span className="text-[10px] font-bold uppercase opacity-80 tracking-widest">My Cart</span>
-                <span className="text-sm font-black">${cart.reduce((a, b) => a + (b.price * b.qty), 0).toFixed(2)}</span>
+                <span className="text-sm font-black">₹ {cart.reduce((a, b) => a + (b.price * b.qty), 0).toFixed(2)}</span>
               </div>
             </Link>
           </div>
