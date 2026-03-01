@@ -20,10 +20,10 @@ const Shop = () => {
       try {
         setLoading(true);
 
-        let url = 'http://localhost:5000/api/products';
+        let url = `${import.meta.env.VITE_API_URL}/products`;
 
         if (categoryFromURL !== 'All') {
-          url = `http://localhost:5000/api/products?category=${categoryFromURL}`;
+          url = `${import.meta.env.VITE_API_URL}/products?category=${categoryFromURL}`;
         }
 
         const { data } = await axios.get(url);

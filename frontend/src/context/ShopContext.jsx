@@ -29,7 +29,9 @@ export const ShopProvider = ({ children }) => {
         const fetchAllProducts = async () => {
             try {
                 setLoading(true);
-                const { data } = await axios.get('/api/products'); // Ensure this route exists
+                 const { data } = await axios.get(
+                `${import.meta.env.VITE_API_URL}/products`
+            );
                 setProducts(data);
             } catch (error) {
                 console.error("Error loading products for search:", error);
@@ -50,7 +52,8 @@ export const ShopProvider = ({ children }) => {
         const fetchWishlist = async () => {
             if (user?._id) {
                 try {
-                    const { data } = await axios.get(`/api/wishlist/${user._id}`);
+                    const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/wishlist/${user._id}`);
+
                     setWishlist(data);
                 } catch (error) {
                     console.error("Failed to fetch wishlist", error);
