@@ -21,20 +21,24 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    const login = async (email, password) => {
-        try {
-            const { data } = await axios.post('/api/auth/login', { email, password });
-            setUser(data);
-            localStorage.setItem('userInfo', JSON.stringify(data));
-            navigate('/');
-            return { success: true };
-        } catch (error) {
-            return {
-                success: false,
-                message: error.response?.data?.message || 'Login failed'
-            };
-        }
-    };
+const login = async (email, password) => {
+    try {
+        const { data } = await axios.post('/auth/login', {
+            email,
+            password
+        });
+
+        localStorage.setItem('userInfo', JSON.stringify(data));
+        setUser(data);
+
+        return { success: true };
+    } catch (error) {
+        return {
+            success: false,
+            message: error.response?.data?.message || "Login failed"
+        };
+    }
+};
 
     const register = async (name, email, password) => {
         try {
@@ -98,9 +102,28 @@ const registerWithOtp = async (formData, otpResult) => {
 
 // ... login, register, logout, updateUser functions ...
 
-    const sendOtp = async (phoneNumber) => {
+  
+const sendOtp = async () => {
+    console.log(`sendOtp called`);
   try {
-    // If recaptcha already exists, reuse it
+    let rawPhone = formData.phone.trim();
+
+    // 🔎 Remove all non-digit characters
+    rawPhone = rawPhone.replace(/\D/g, "");
+
+    // ✅ Validate Indian phone number (10 digits starting 6-9)
+    const phoneRegex = /^[6-9]\d{9}$/;
+
+    if (!phoneRegex.test(rawPhone)) {
+      return {
+        success: false,
+        message: "Please enter a valid 10-digit Indian phone number",
+      };
+    }
+
+    const formattedPhone = `+91${rawPhone}`;
+
+    // 🔐 Initialize reCAPTCHA only once
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(
         auth,
@@ -118,18 +141,34 @@ const registerWithOtp = async (formData, otpResult) => {
 
     const confirmationResult = await signInWithPhoneNumber(
       auth,
-      phoneNumber,
+      formattedPhone,
       window.recaptchaVerifier
     );
 
     window.confirmationResult = confirmationResult;
 
     return { success: true };
+
   } catch (error) {
     console.error("Firebase SMS Error:", error);
+
+    if (error.code === "auth/invalid-phone-number") {
+      return {
+        success: false,
+        message: "Invalid phone number format",
+      };
+    }
+
+    if (error.code === "auth/too-many-requests") {
+      return {
+        success: false,
+        message: "SMS quota exceeded. Try later.",
+      };
+    }
+
     return {
       success: false,
-      message: "Invalid Phone Number or SMS quota exceeded",
+      message: "Failed to send OTP. Try again.",
     };
   }
 };

@@ -1,3 +1,7 @@
+
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -39,7 +43,7 @@ app.use(cors({
 }));
 
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 app.use(express.json());
 
 // Health check endpoint

@@ -3,86 +3,160 @@ const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { protect } = require('../middleware/authMiddleware');
-
+const sendEmailOtp = require('../utils/sendEmail')
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', {
         expiresIn: '30d',
     });
 };
+const rateLimit = require("express-rate-limit");
 
-// 1. Pre-Registration Check (Call this before sending OTP)
-router.post('/check-user', async (req, res) => {
-    console.log("check-user api called");
-    const { email, phone } = req.body;
-    try {
-        const userExists = await User.findOne({ $or: [{ email }, { phone }] });
-        if (userExists) {
-            return res.status(400).json({ message: 'Email or Phone already registered' });
-        }
-        console.log(`proceeding to otp`);
-        res.status(200).json({ message: 'Proceed to OTP' });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-    }
+// Allow only 3 OTP requests per 5 minutes per IP
+const otpLimiter = rateLimit({
+  windowMs: 2 * 60 * 1000, // 5 minutes
+  max: 3,
+  message: {
+    message: "Too many OTP requests. Try again after 5 minutes."
+  }
 });
 
-// 2. Final Registration (Call this after Firebase OTP is verified)
-router.post('/register', async (req, res) => {
-    console.log(`registr api called`);
-    const { name, email, password, phone, firebaseUid } = req.body;
+router.post('/send-email-otp', otpLimiter, async (req, res) => {
+    const { name, email, phone, password } = req.body;
 
     try {
-        // Final security check
-        const userExists = await User.findOne({ $or: [{ email }, { phone }] });
-        if (userExists) return res.status(400).json({ message: 'User already exists' });
-
-        // Create the user
-        const user = await User.create({
-            name,
-            email,
-            password, // Password will be hashed by your User Model middleware
-            phone,
-            firebaseUid // Optional: Store for future login/security
+        let user;
+        // 🔥 Check if email OR phone already exists
+        const existingUser = await User.findOne({
+            $or: [{ email }, { phone }]
         });
 
-        if (user) {
-            res.status(201).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                isAdmin: user.isAdmin,
-                token: generateToken(user._id),
-            });
+        if (existingUser) {
+            if (existingUser.isEmailVerified) {
+                return res.status(400).json({
+                    message: "User already exists. Please login."
+                });
+            }
+
+            // If not verified → allow OTP resend
+            const timeLeft = existingUser.emailOtpExpiry - new Date();
+
+            if (timeLeft > 4 * 60 * 1000) {
+                return res.status(400).json({
+                    message: "Please wait before requesting new OTP"
+                });
+            }
+
+            user = existingUser;
         } else {
-            res.status(400).json({ message: 'Invalid user data' });
+            user = new User({ name, email, phone, password });
         }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.emailOtp = otp;
+        user.emailOtpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+        await user.save();
+        await sendEmailOtp(email, otp);
+
+        res.json({ message: "OTP sent to email" });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error during registration' });
+
+        // 🔥 Special handling for duplicate error
+        if (error.code === 11000) {
+            return res.status(400).json({
+                message: "Email or phone already registered."
+            });
+        }
+
+        res.status(500).json({ message: "Server error" });
     }
 });
-// @desc    Auth user & get token
-// @route   POST /api/auth/login
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+
+router.post('/verify-email-otp', async (req, res) => {
+    console.log(`verify otp came`);
+    const { email, otp } = req.body;
 
     try {
         const user = await User.findOne({ email });
 
-        if (user && (await user.matchPassword(password))) {
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                isAdmin: user.isAdmin,
-                token: generateToken(user._id),
-            });
-        } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+        if (!user || user.emailOtp !== otp) {
+            return res.status(400).json({ message: "Invalid OTP" });
         }
+
+        if (user.emailOtpExpiry < new Date()) {
+            return res.status(400).json({ message: "OTP expired" });
+        }
+
+        user.isEmailVerified = true;
+        user.emailOtp = undefined;
+        user.emailOtpExpiry = undefined;
+
+        await user.save();
+
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            token: generateToken(user._id)
+        });
+
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: "Verification failed" });
+    }
+});
+
+
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // 🔹 1. Validate input
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password are required."
+            });
+        }
+
+        const user = await User.findOne({ email });
+
+        // 🔹 2. User not found
+        if (!user) {
+            return res.status(401).json({
+                message: "No account found with this email."
+            });
+        }
+
+        // 🔹 3. Email not verified
+        if (!user.isEmailVerified) {
+            return res.status(403).json({
+                message: "Please verify your email before logging in."
+            });
+        }
+
+        // 🔹 4. Wrong password
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
+            return res.status(401).json({
+                message: "Invalid email or password."
+            });
+        }
+
+        // 🔹 5. Success
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            token: generateToken(user._id),
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Server error. Please try again later."
+        });
     }
 });
 
@@ -105,32 +179,7 @@ router.get('/profile', protect, async (req, res) => {
 
 const nodemailer = require('nodemailer');
 
-// Temporary store for OTPs (In production, use Redis or a DB collection with TTL)
-let otpStore = {}; 
 
-router.post('/send-otp', async (req, res) => {
-    console.log(`send-otp api called`);
-    const { email } = req.body;
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otpStore[email] = { otp, expires: Date.now() + 300000 }; // 5 mins expiry
-
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-    });
-
-    try {
-        await transporter.sendMail({
-            from: '"RealOrganic" <no-reply@realorganic.com>',
-            to: email,
-            subject: "Your Registration OTP",
-            text: `Your OTP is ${otp}. It expires in 5 minutes.`
-        });
-        res.status(200).json({ success: true, message: 'OTP sent to email' });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Email failed to send' });
-    }
-});
 
 
 

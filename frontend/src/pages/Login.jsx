@@ -18,19 +18,30 @@ const Login = () => {
     const from = location.state?.from || '/';
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setIsLoading(true);
-        
+    e.preventDefault();
+
+    if (!email || !password) {
+        setError("Please enter both email and password.");
+        return;
+    }
+
+    setError('');
+    setIsLoading(true);
+
+    try {
         const res = await login(email, password);
-        
+
         if (res.success) {
             navigate(from, { replace: true });
         } else {
-            setError(res.message);
-            setIsLoading(false);
+            setError(res.message || "Login failed");
         }
-    };
+    } catch (err) {
+        setError("Something went wrong. Please try again.");
+    }
+
+    setIsLoading(false);
+};
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50 flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -252,7 +263,7 @@ const Login = () => {
                                 </div>
 
                                 {/* Remember & Forgot */}
-                                <div className="flex items-center justify-between text-sm">
+                                {/* <div className="flex items-center justify-between text-sm">
                                     <label className="flex items-center gap-2 cursor-pointer group">
                                         <input 
                                             type="checkbox" 
@@ -268,7 +279,7 @@ const Login = () => {
                                     >
                                         Forgot Password?
                                     </Link>
-                                </div>
+                                </div> */}
 
                                 {/* Submit Button */}
                                 <motion.button

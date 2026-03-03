@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Smartphone, ArrowRight, Loader2, Mail, Lock, User, Phone, Eye, EyeOff, Sparkles, Zap, Clock, CheckCircle2, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { auth } from "../firebaseConfig"; // your firebase config file
 import axios from 'axios';
 
 const Register = () => {
     const [step, setStep] = useState(1); // 1: Details, 2: OTP
     const [formData, setFormData] = useState({ 
         name: '', 
-        email: '', 
+        // email: '', 
         phone: '', 
         password: '', 
         confirmPassword: '' 
@@ -19,64 +21,88 @@ const Register = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+    const [confirmationResult, setConfirmationResult] = useState(null);
     const { sendOtp, verifyOtpAndRegister } = useAuth();
     const navigate = useNavigate();
+     const [timer, setTimer] = useState(0);
+
+     useEffect(() => {
+  if (timer > 0) {
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }
+}, [timer]);
 
     const handleSendOtp = async (e) => {
-        e.preventDefault();
-        setError('');
-        
-        // Password Validation
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-        // if (!passwordRegex.test(formData.password)) {
-        //     setError('Password: 8+ chars, 1 uppercase, 1 number');
-        //     return;
-        // }
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
+  e.preventDefault();
+  setError("");
 
-        setLoading(true);
-        try {
-            const { data } = await axios.post('/api/auth/check-user', { 
-                email: formData.email, 
-                phone: formData.phone 
-            });
-            console.log(`check user api done in frontend, going for send otp`);
-            const res = await sendOtp(formData.phone);
-            
-            if (res.success) {
-                setStep(2);
-            } else {
-                setError(res.message);
-            }
-        } catch (err) {
-            setError(err.response?.data?.message || "Verification failed. Try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
+  if (formData.password !== formData.confirmPassword) {
+    setError("Passwords do not match");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    await axios.post("/auth/send-email-otp", {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+    });
+
+    setStep(2);
+    setTimer(60); // 🔥 start resend timer
+
+  } catch (err) {
+    setError(err.response?.data?.message || "Failed to send OTP");
+  }
+
+  setLoading(false);
+};
 
     const handleVerify = async (e) => {
-        e.preventDefault();
-        const otpCode = otp.join('');
-        if (otpCode.length !== 6) {
-            setError('Please enter a valid 6-digit OTP');
-            return;
-        }
+  e.preventDefault();
+  setError("");
 
-        setLoading(true);
-        const res = await verifyOtpAndRegister(formData, otpCode);
-        setLoading(false);
-        
-        if (res.success) {
-            navigate('/profile');
-        } else {
-            setError(res.message);
-        }
-    };
+  const otpCode = otp.join("");
+
+  if (otpCode.length !== 6) {
+    setError("Please enter a valid 6-digit OTP");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const { data } = await axios.post("/auth/verify-email-otp", {
+      email: formData.email,
+      otp: otpCode,
+    });
+
+    localStorage.setItem("userInfo", JSON.stringify(data));
+    navigate("/profile");
+
+  } catch (err) {
+    setError(err.response?.data?.message || "Invalid OTP");
+  }
+
+  setLoading(false);
+};
+const handleResendOtp = async () => {
+  if (timer > 0) return;
+
+  try {
+    await axios.post("/auth/send-email-otp", formData);
+    setTimer(60);
+  } catch (err) {
+    setError(err.response?.data?.message || "Failed to resend OTP");
+  }
+};
 
     const handleOtpChange = (index, value) => {
         if (value.length > 1) return;
@@ -342,9 +368,11 @@ const Register = () => {
                                                 </div>
                                                 <input
                                                     type="tel"
+                                                    maxLength={10}
+                                                    pattern='[6-9]{1}[0-9]{9}'
                                                     required
                                                     className="w-full pl-14 pr-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all text-gray-900 font-medium placeholder:text-gray-400 bg-gray-50 focus:bg-white"
-                                                    placeholder="+91 98765 43210"
+                                                    placeholder="Enter 10-digit mobile number"
                                                     value={formData.phone}
                                                     onChange={e => setFormData({...formData, phone: e.target.value})}
                                                 />
