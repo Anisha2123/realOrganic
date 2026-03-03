@@ -25,33 +25,66 @@ router.post('/send-email-otp', otpLimiter, async (req, res) => {
 
     try {
         let user;
-        // 🔥 Check if email OR phone already exists
+
         const existingUser = await User.findOne({
             $or: [{ email }, { phone }]
         });
 
         if (existingUser) {
-            if (existingUser.isEmailVerified) {
+
+            // ✅ If both email & phone match and verified
+            if (
+                existingUser.email === email &&
+                existingUser.phone === phone &&
+                existingUser.isEmailVerified
+            ) {
                 return res.status(400).json({
-                    message: "User already exists. Please login."
+                    message: "Email and Phone already registered. Please login."
                 });
             }
 
-            // If not verified → allow OTP resend
-            const timeLeft = existingUser.emailOtpExpiry - new Date();
-
-            if (timeLeft > 4 * 60 * 1000) {
+            // ✅ Email already used by verified user
+            if (
+                existingUser.email === email &&
+                existingUser.isEmailVerified
+            ) {
                 return res.status(400).json({
-                    message: "Please wait before requesting new OTP"
+                    message: "Email already registered. Please login."
                 });
+            }
+
+            // ✅ Phone already used by verified user
+            if (
+                existingUser.phone === phone &&
+                existingUser.isEmailVerified
+            ) {
+                return res.status(400).json({
+                    message: "Phone number already registered. Please login."
+                });
+            }
+
+            // 🔥 If NOT verified → allow resend but rate limit
+            if (existingUser.emailOtpExpiry) {
+                const timeLeft =
+                    new Date(existingUser.emailOtpExpiry) - new Date();
+
+                if (timeLeft > 4 * 60 * 1000) {
+                    return res.status(400).json({
+                        message: "Please wait before requesting new OTP"
+                    });
+                }
             }
 
             user = existingUser;
+
         } else {
+            // ✅ Brand new user
             user = new User({ name, email, phone, password });
         }
 
+        // 🔥 Generate OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
         user.emailOtp = otp;
         user.emailOtpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
@@ -63,7 +96,6 @@ router.post('/send-email-otp', otpLimiter, async (req, res) => {
     } catch (error) {
         console.error(error);
 
-        // 🔥 Special handling for duplicate error
         if (error.code === 11000) {
             return res.status(400).json({
                 message: "Email or phone already registered."
