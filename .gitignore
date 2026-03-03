@@ -45,3 +45,4 @@ tmp/
 !.env.example
 !backend/.env.example
 !frontend/.env.example
+backend/realorganic-cd84d-firebase-adminsdk-fbsvc-95f86fbe35
