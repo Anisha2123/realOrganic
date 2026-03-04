@@ -14,7 +14,7 @@ const Profile = () => {
             if (!user?.token) return;
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get('/api/orders/myorders', config);
+                const { data } = await axios.get('/orders/myorders', config);
                 setOrders(data);
             } catch (error) {
                 console.error("Error fetching orders", error);
@@ -35,73 +35,62 @@ const Profile = () => {
             <div className="container mx-auto px-4 max-w-5xl">
 
                 {/* Premium Header Card with Glassmorphism/Gradient */}
-                <div className="relative overflow-hidden bg-white rounded-[2rem] p-8 mb-10 shadow-xl shadow-slate-200/40 border border-slate-100 group">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+                {/* Premium Header Card - Fully Responsive */}
+<div className="relative overflow-hidden bg-white rounded-3xl p-5 sm:p-8 mb-8 sm:mb-10 shadow-xl shadow-slate-200/40 border border-slate-100 group">
+    
+    {/* Background Glow */}
+    <div className="absolute top-0 right-0 w-40 sm:w-64 h-40 sm:h-64 bg-emerald-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-40 sm:opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-                    <div className="relative flex flex-col sm:flex-row items-center gap-8 z-10">
-                        <div className="relative">
-                            <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-full flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-emerald-500/20 ring-4 ring-white">
-                                {user.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full shadow-sm">
-                                <div className="bg-emerald-500 w-4 h-4 rounded-full border-2 border-white"></div>
-                            </div>
-                        </div>
+    <div className="relative flex flex-col lg:flex-row items-center lg:items-start gap-6 sm:gap-8 z-10">
+        
+        {/* Avatar */}
+        <div className="relative">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-full flex items-center justify-center text-3xl sm:text-4xl font-black text-white shadow-2xl shadow-emerald-500/20 ring-4 ring-white">
+                {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full shadow-sm">
+                <div className="bg-emerald-500 w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 border-white"></div>
+            </div>
+        </div>
 
-                        <div className="flex-1 text-center sm:text-left space-y-2">
-                            <h1 className="text-3xl font-black text-slate-900 tracking-tight">{user.name}</h1>
-                            <p className="text-slate-500 font-medium">{user.email}</p>
-                            <div className="flex flex-wrap justify-center sm:justify-start gap-3 pt-1">
-                                <span className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider">
-                                    {user.role || 'Member'}
-                                </span>
-                                <span className="bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border border-emerald-100">
-                                    Verified
-                                </span>
-                            </div>
-                        </div>
+        {/* User Info */}
+        <div className="flex-1 text-center lg:text-left space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight break-words">
+                {user.name}
+            </h1>
+            <p className="text-sm sm:text-base text-slate-500 font-medium break-all">
+                {user.email}
+            </p>
 
-                        <button
-                            onClick={logout}
-                            className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 hover:bg-rose-50 hover:text-rose-600 font-bold text-sm rounded-2xl transition-all duration-300 border border-slate-200 hover:border-rose-100 group/btn"
-                        >
-                            <LogOut size={18} className="group-hover/btn:scale-110 transition-transform" />
-                            Logout
-                        </button>
-                    </div>
-                </div>
+            <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3 pt-2">
+                <span className="bg-slate-100 text-slate-600 px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
+                    {user.role || 'Member'}
+                </span>
+
+                <span className="bg-emerald-50 text-emerald-700 px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border border-emerald-100">
+                    Verified
+                </span>
+            </div>
+        </div>
+
+        {/* Logout Button */}
+        <button
+            onClick={logout}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 hover:bg-rose-50 hover:text-rose-600 font-bold text-sm rounded-2xl transition-all duration-300 border border-slate-200 hover:border-rose-100 group/btn"
+        >
+            <LogOut size={18} className="group-hover/btn:scale-110 transition-transform" />
+            Logout
+        </button>
+
+    </div>
+</div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {/* Left Column: Quick Stats & Actions */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg shadow-slate-200/30 hover:shadow-xl hover:shadow-slate-200/50 transition-shadow duration-300">
-                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 px-1">Default Address</h3>
-                            <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
-                                <div className="bg-white p-2.5 rounded-xl shadow-sm text-emerald-600">
-                                    <MapPin size={20} />
-                                </div>
-                                <p className="text-sm font-bold text-slate-700 leading-relaxed pt-1">
-                                    {user.address || "No address saved. Add one during your next checkout."}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg shadow-slate-200/30">
-                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 px-1">Settings</h3>
-                            <div className="space-y-3">
-                                {['Payment Methods', 'Notifications', 'Help & Support'].map((item) => (
-                                    <button key={item} className="w-full flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-all text-sm font-bold text-slate-700 group">
-                                        {item}
-                                        <ChevronRight size={16} className="text-slate-300 group-hover:text-emerald-500 transition-colors" />
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                    
 
                     {/* Right Column: Order Feed */}
-                    <div className="lg:col-span-2">
+                     <div className="lg:col-span-2">
                         <div className="flex items-center justify-between mb-6 px-2">
                             <h2 className="text-xl font-black text-slate-900 flex items-center gap-3">
                                 <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600">
@@ -140,7 +129,7 @@ const Profile = () => {
                                         <div className="flex justify-between items-start mb-6">
                                             <div>
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    <span className={`flex h-2.5 w-2.5 rounded-full ${order.isPaid ? 'bg-emerald-500 shadow-md shadow-emerald-500/30' : 'bg-amber-500'}`}></span>
+                                                    <span className={`flex h-2.5 w-2.5 rounded-full  ${order.isPaid ? 'bg-emerald-500 shadow-md shadow-emerald-500/30' : 'bg-amber-500'}`}></span>
                                                     <span className={`text-[11px] font-black uppercase tracking-widest ${order.isPaid ? 'text-emerald-600' : 'text-amber-600'}`}>
                                                         {order.isPaid ? 'Delivered' : 'Pending'}
                                                     </span>
@@ -150,7 +139,7 @@ const Profile = () => {
                                                 </h4>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-xl font-black text-slate-900 tracking-tight">${order.totalPrice.toFixed(2)}</p>
+                                                <p className="text-xl font-black text-slate-900 tracking-tight">Rs {order.totalPrice.toFixed(2)}</p>
                                                 <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-bold justify-end mt-1">
                                                     <Clock size={12} />
                                                     {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}

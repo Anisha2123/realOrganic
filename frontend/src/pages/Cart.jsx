@@ -44,7 +44,7 @@ console.log(`zipCode is ${zipCode}`);
 
     setLoading(true);
     try {
-      const { data: orderData } = await axios.post('/api/orders/payment', { 
+      const { data: orderData } = await axios.post('/orders/payment', { 
         amount: grandTotal 
       });
       
@@ -100,7 +100,7 @@ console.log(`zipCode is ${zipCode}`);
           };
           
           try {
-            await axios.post('/api/orders', paymentData, config);
+            await axios.post('/orders', paymentData, config);
             clearCart();
             navigate('/profile'); 
           } catch (err) {
