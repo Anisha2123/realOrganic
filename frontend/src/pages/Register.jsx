@@ -230,9 +230,9 @@ const handleResendOtp = async () => {
                     {/* Stats */}
                     <div className="flex items-center gap-8 pt-4">
                         {[
-                            { value: "50K+", label: "Happy Users" },
+                            { value: "50+", label: "Happy Users" },
                             { value: "500+", label: "Products" },
-                            { value: "10min", label: "Avg Delivery" }
+                            { value: "20min", label: "Avg Delivery" }
                         ].map((stat, i) => (
                             <motion.div
                                 key={i}
@@ -284,10 +284,10 @@ const handleResendOtp = async () => {
                                 </motion.div>
                                 
                                 <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-                                    {step === 1 ? 'Join FreshCart' : 'Verify Phone'}
+                                    {step === 1 ? 'Join FreshCart' : 'Verify Email'}
                                 </h2>
                                 <p className="text-gray-600 font-medium">
-                                    {step === 1 ? 'Start getting fresh groceries delivered' : `OTP sent to ${formData.phone}`}
+                                    {step === 1 ? 'Start getting fresh groceries delivered' : `OTP sent to ${formData.email}`}
                                 </p>
                             </div>
 
@@ -478,26 +478,45 @@ const handleResendOtp = async () => {
                                         onSubmit={handleVerify}
                                         className="space-y-8"
                                     >
-                                        {/* OTP Input Boxes */}
-                                        <div>
-                                            <label className="block text-sm font-bold text-gray-900 text-center mb-4">
-                                                Enter 6-Digit Code
-                                            </label>
-                                            <div className="flex justify-center gap-3">
-                                                {otp.map((digit, index) => (
-                                                    <input
-                                                        key={index}
-                                                        id={`otp-${index}`}
-                                                        type="text"
-                                                        maxLength="1"
-                                                        className="w-14 h-16 text-center text-2xl font-black border-2 border-gray-200 rounded-2xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all bg-gray-50 focus:bg-white text-emerald-600"
-                                                        value={digit}
-                                                        onChange={(e) => handleOtpChange(index, e.target.value)}
-                                                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
+                                       {/* OTP Input Boxes */}
+<div>
+  <label className="block text-sm sm:text-base font-bold text-gray-900 text-center mb-3 sm:mb-4">
+    Enter 6-Digit Code
+  </label>
+
+  <div className="flex justify-center gap-2 sm:gap-3 px-2">
+    {otp.map((digit, index) => (
+      <input
+        key={index}
+        id={`otp-${index}`}
+        type="text"
+        maxLength="1"
+        className="
+          w-10 h-12
+          xs:w-11 xs:h-14
+          sm:w-12 sm:h-14
+          md:w-14 md:h-16
+          text-lg sm:text-xl md:text-2xl
+          font-black
+          text-center
+          border-2 border-gray-200
+          rounded-xl sm:rounded-2xl
+          bg-gray-50
+          text-emerald-600
+          outline-none
+          transition-all
+          focus:border-emerald-500
+          focus:ring-2 sm:focus:ring-4
+          focus:ring-emerald-500/10
+          focus:bg-white
+        "
+        value={digit}
+        onChange={(e) => handleOtpChange(index, e.target.value)}
+        onKeyDown={(e) => handleOtpKeyDown(index, e)}
+      />
+    ))}
+  </div>
+</div>
 
                                         {/* Verify Button */}
                                         <motion.button
@@ -534,7 +553,7 @@ const handleResendOtp = async () => {
                                             onClick={() => setStep(1)}
                                             className="w-full text-sm font-bold text-gray-500 hover:text-emerald-600 transition-colors"
                                         >
-                                            ← Edit Phone Number
+                                            ← Edit Email
                                         </button>
                                     </motion.form>
                                 )}
@@ -575,17 +594,31 @@ const handleResendOtp = async () => {
                 </motion.div>
             </div>
 
-            {/* Mobile Logo - Shown only on small screens */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="lg:hidden absolute top-8 left-1/2 -translate-x-1/2"
-            >
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl shadow-lg shadow-emerald-500/30">
-                    <Sparkles size={20} className="text-white" />
-                    <span className="text-white font-black text-lg tracking-tight">FreshCart</span>
-                </div>
-            </motion.div>
+            {/* Mobile Logo */}
+<motion.div
+  initial={{ opacity: 0, y: 15 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.4 }}
+  className="lg:hidden absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 z-20"
+>
+  <div className="
+      inline-flex items-center gap-2
+      px-3 sm:px-4
+      py-1.5 sm:py-2
+      bg-gradient-to-r from-emerald-500 to-green-500
+      rounded-lg sm:rounded-xl
+      shadow-md sm:shadow-lg shadow-emerald-500/30
+    "
+  >
+    <Sparkles
+      size={18}
+      className="text-white sm:w-5 sm:h-5"
+    />
+    <span className="text-white font-black text-base sm:text-lg tracking-tight">
+      FreshCart
+    </span>
+  </div>
+</motion.div>
 
             {/* Firebase Recaptcha Container */}
             <div id="recaptcha-container" className="hidden"></div>

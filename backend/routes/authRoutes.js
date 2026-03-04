@@ -87,7 +87,7 @@ router.post('/send-email-otp', otpLimiter, async (req, res) => {
 
         user.emailOtp = otp;
         user.emailOtpExpiry = new Date(Date.now() + 5 * 60 * 1000);
-
+         console.log(`user saved in db `);
         await user.save();
         await sendEmailOtp(email, otp);
 
@@ -107,23 +107,35 @@ router.post('/send-email-otp', otpLimiter, async (req, res) => {
 });
 
 router.post('/verify-email-otp', async (req, res) => {
-    console.log(`verify otp came`);
     const { email, otp } = req.body;
 
     try {
         const user = await User.findOne({ email });
 
-        if (!user || user.emailOtp !== otp) {
-            return res.status(400).json({ message: "Invalid OTP" });
+        // 1️⃣ User not found
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
         }
 
-        if (user.emailOtpExpiry < new Date()) {
+        // 2️⃣ OTP expired
+        if (!user.emailOtpExpiry || user.emailOtpExpiry < new Date()) {
             return res.status(400).json({ message: "OTP expired" });
         }
 
+        // 3️⃣ OTP mismatch
+        if (user.emailOtp?.toString() !== otp.toString()) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+
+        // 4️⃣ Already verified (optional but good)
+        if (user.isEmailVerified) {
+            return res.status(400).json({ message: "Email already verified" });
+        }
+
+        // 5️⃣ Verify user
         user.isEmailVerified = true;
-        user.emailOtp = undefined;
-        user.emailOtpExpiry = undefined;
+        user.emailOtp = null;
+        user.emailOtpExpiry = null;
 
         await user.save();
 
@@ -135,6 +147,7 @@ router.post('/verify-email-otp', async (req, res) => {
         });
 
     } catch (error) {
+        console.error("OTP VERIFY ERROR:", error);
         res.status(500).json({ message: "Verification failed" });
     }
 });
@@ -171,7 +184,7 @@ router.post('/login', async (req, res) => {
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
             return res.status(401).json({
-                message: "Invalid email or password."
+                message: "Invalid password."
             });
         }
 

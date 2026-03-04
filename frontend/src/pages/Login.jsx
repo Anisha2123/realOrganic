@@ -49,7 +49,7 @@ const Login = () => {
             {/* Animated Background Elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <motion.div
-                    className="absolute top-20 -left-40 w-96 h-96 bg-emerald-300 opacity-20 rounded-full blur-3xl"
+                    className="absolute top-20 -left-40 sm:w-72 sm:h-72 max-sm:w-80 max-sm:h-80 bg-emerald-300 opacity-20 rounded-full blur-3xl"
                     animate={{
                         scale: [1, 1.2, 1],
                         opacity: [0.2, 0.3, 0.2]
@@ -57,7 +57,7 @@ const Login = () => {
                     transition={{ duration: 8, repeat: Infinity }}
                 />
                 <motion.div
-                    className="absolute bottom-20 -right-40 w-96 h-96 bg-green-300 opacity-20 rounded-full blur-3xl"
+                    className="absolute bottom-20 -right-40 sm:w-72 sm:h-72 max-sm:w-80 max-sm:h-80 lg:w-96 lg:h-96 bg-green-300 opacity-20 rounded-full blur-3xl"
                     animate={{
                         scale: [1.2, 1, 1.2],
                         opacity: [0.3, 0.2, 0.3]
@@ -90,14 +90,14 @@ const Login = () => {
                 ))}
             </div>
 
-            <div className="relative w-full max-w-6xl flex items-center justify-center gap-12 lg:gap-20">
+            <div className="relative w-full max-w-6xl flex flex-col lg:flex-row items-center justify-center gap-10 sm:gap-12 lg:gap-20">
                 
                 {/* Left Side - Branding (Hidden on Mobile) */}
                 <motion.div 
                     initial={{ opacity: 0, x: -30 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="hidden lg:flex flex-col space-y-8 flex-1 max-w-xl"
+                    className="hidden md:flex lg:flex flex-col space-y-6 lg:space-y-8 flex-1 max-w-xl px-4 lg:px-0 text-center lg:text-left"
                 >
                     {/* Logo/Brand */}
                     <div className="space-y-4">
@@ -126,7 +126,7 @@ const Login = () => {
                     {/* Features */}
                     <div className="space-y-4">
                         {[
-                            { icon: <Clock size={20} />, text: "Delivery in 10 Minutes" },
+                            { icon: <Clock size={20} />, text: "Delivery in 20 Minutes" },
                             { icon: <Leaf size={20} />, text: "100% Fresh & Organic" },
                             { icon: <Truck size={20} />, text: "Free Delivery on Orders ₹199+" }
                         ].map((feature, i) => (
@@ -146,11 +146,11 @@ const Login = () => {
                     </div>
 
                     {/* Stats */}
-                    <div className="flex items-center gap-8 pt-4">
+                    <div className="flex flex-wrap justify-center lg:justify-start gap-6 sm:gap-8 pt-4">
                         {[
-                            { value: "50K+", label: "Happy Customers" },
-                            { value: "5000+", label: "Products" },
-                            { value: "10 Min", label: "Avg Delivery" }
+                            { value: "50+", label: "Happy Customers" },
+                            { value: "500+", label: "Products" },
+                            { value: "20Min", label: "Avg Delivery" }
                         ].map((stat, i) => (
                             <motion.div
                                 key={i}
@@ -180,7 +180,7 @@ const Login = () => {
                         <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-green-400 rounded-[2rem] blur-2xl opacity-20" />
                         
                         {/* Main Card */}
-                        <div className="relative bg-white rounded-[2rem] shadow-2xl shadow-emerald-500/10 p-10 sm:p-12 space-y-8">
+                        <div className="relative bg-white rounded-[2rem] shadow-2xl shadow-emerald-500/10 p-6 sm:p-8 md:p-10 lg:p-12 space-y-6 sm:space-y-8">
                             
                             {/* Header */}
                             <div className="text-center space-y-3">
@@ -362,10 +362,10 @@ const Login = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="lg:hidden absolute top-8 left-1/2 -translate-x-1/2"
             >
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl shadow-lg shadow-emerald-500/30">
+                {/* <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl shadow-lg shadow-emerald-500/30">
                     <Leaf size={20} className="text-white" />
-                    <span className="text-white font-black text-lg tracking-tight">REAL ORGANIC</span>
-                </div>
+                    <span className="text-white font-black text-md tracking-tight">REAL ORGANIC</span>
+                </div> */}
             </motion.div>
         </div>
     );

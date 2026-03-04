@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Navigate } from "react-router-dom";
 import axios from 'axios';
 import { Package, MapPin, Loader2, ChevronRight, LogOut, ShoppingBag, Clock } from 'lucide-react';
 
@@ -26,18 +27,8 @@ const Profile = () => {
     }, [user, logout]);
 
     if (!user) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-white">
-                <div className="bg-red-50 p-6 rounded-3xl border border-red-100/50 flex flex-col items-center gap-3 shadow-lg shadow-red-500/5">
-                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-500 mb-2">
-                        <LogOut size={20} />
-                    </div>
-                    <h3 className="text-red-900 font-extrabold text-lg">Access Denied</h3>
-                    <p className="text-red-500/80 font-medium text-sm text-center">Please log in to access your profile.</p>
-                </div>
-            </div>
-        );
-    }
+    return <Navigate to="/login" replace />;
+}
 
     return (
         <div className="min-h-screen bg-gray-50/50 pt-28 pb-24">
