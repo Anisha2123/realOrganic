@@ -61,7 +61,7 @@ const Home = () => {
   return (
 
     <div className="bg-white min-h-screen">
-      <Hero />
+      {/* <Hero /> */}
       <HomeCategories />
       {/* Features Section */}
       {/* <section className="py-10 bg-white">
@@ -86,7 +86,7 @@ const Home = () => {
       <Shop/>
 
       {/* Banner Section */}
-      <section className="py-20">
+      {/* <section className="py-20">
         <div className="container mx-auto px-6 lg:px-12">
           <div className="bg-emerald-900 rounded-3xl overflow-hidden relative">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-overlay" />
@@ -101,7 +101,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 };
