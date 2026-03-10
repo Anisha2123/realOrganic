@@ -9,7 +9,7 @@ const orderSchema = new mongoose.Schema({
     }, 
     customerInfo: {
         name: { type: String, required: true },
-        // email: { type: String, required: true },
+        email: { type: String, required: true },
         address: { type: String, required: true },
         city: { type: String, required: true },
         // zip: { type: String, required: true },
@@ -29,7 +29,7 @@ const orderSchema = new mongoose.Schema({
     ],
     itemsPrice: { type: Number, required: true },
     taxPrice: { type: Number, required: true, default: 0.0 },
-    shippingPrice: { type: Number, required: true, default: 1.0 },
+    shippingPrice: { type: Number, required: true, default: 0.0 },
     totalPrice: { type: Number, required: true },
     
     // Enhanced Razorpay Tracking

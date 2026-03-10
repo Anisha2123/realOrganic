@@ -4,6 +4,7 @@ const Order = require('../models/Order');
 const Razorpay = require('razorpay');
 const crypto = require('crypto'); // Built-in Node.js module for security
 const { protect } = require('../middleware/authMiddleware');
+const sendOrderEmail = require("../utils/sendOrderEmail");
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -86,9 +87,10 @@ router.post('/', protect, async (req, res) => {
             isPaid: true,
             paidAt: Date.now(),
         });
-        console.log(`customer info is ${customerInfo}`);
+        console.log("customer info:", customerInfo);
 
         const createdOrder = await order.save();
+        await sendOrderEmail(createdOrder, req.user.email);
         res.status(201).json(createdOrder);
 
     } catch (error) {

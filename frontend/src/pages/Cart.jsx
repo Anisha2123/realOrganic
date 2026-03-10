@@ -13,7 +13,7 @@ const Cart = () => {
 
   const itemsPrice = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
   const taxPrice = itemsPrice * 0.1;
-  const shippingPrice = 1.00;
+  const shippingPrice = 0.00;
   const grandTotal = itemsPrice + taxPrice + shippingPrice;
 
   const handleCheckout = async () => {
@@ -82,7 +82,7 @@ console.log(`zipCode is ${zipCode}`);
             },
             customerInfo: {
               name: user.name,
-              // email: user.email,
+              email: user.email,
               userId: user._id,
               address: savedLocation?.full || "Address not selected",
               city: savedLocation?.short || "",
