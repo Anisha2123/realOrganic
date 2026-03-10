@@ -3,8 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Smartphone, ArrowRight, Loader2, Mail, Lock, User, Phone, Eye, EyeOff, Sparkles, Zap, Clock, CheckCircle2, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-import { auth } from "../firebaseConfig"; // your firebase config file
 import axios from 'axios';
 
 const Register = () => {
@@ -619,9 +617,6 @@ const handleResendOtp = async () => {
     </span>
   </div>
 </motion.div>
-
-            {/* Firebase Recaptcha Container */}
-            <div id="recaptcha-container" className="hidden"></div>
         </div>
     );
 };

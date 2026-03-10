@@ -1,8 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-import { auth } from "../firebaseConfig"; // Your firebase config file 
+
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
@@ -79,7 +78,7 @@ const registerWithOtp = async (formData, otpResult) => {
             phone: formData.phone 
         });
 
-        // 2. Verification is handled by Firebase on the frontend.
+     
         // Once verified, we call the final register API
         const { data } = await axios.post('/api/auth/register', {
             name: formData.name,
