@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { protect } = require('../middleware/authMiddleware');
-const sendEmailOtp = require('../utils/sendOrderEmail')
+const sendEmailOtp = require('../utils/sendEmail')
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', {
         expiresIn: '30d',
@@ -143,6 +143,7 @@ router.post('/verify-email-otp', async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            phone: user.phone,
             token: generateToken(user._id)
         });
 
@@ -193,6 +194,7 @@ router.post('/login', async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            phone: user.phone,   // ⭐ add this
             isAdmin: user.isAdmin,
             token: generateToken(user._id),
         });

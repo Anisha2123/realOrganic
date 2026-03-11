@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const Razorpay = require('razorpay');
-const crypto = require('crypto'); // Built-in Node.js module for security
+const crypto = require('crypto'); // Built-in Node.js module for secur  ity
 const { protect } = require('../middleware/authMiddleware');
 const sendOrderEmail = require("../utils/sendOrderEmail");
 
@@ -47,6 +47,7 @@ router.post('/', protect, async (req, res) => {
         taxPrice,
         shippingPrice,
         totalPrice,
+        phone,
         paymentResult, // Contains razorpay_order_id, razorpay_payment_id, razorpay_signature
     } = req.body;
 

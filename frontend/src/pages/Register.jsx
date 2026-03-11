@@ -82,7 +82,17 @@ const Register = () => {
       otp: otpCode,
     });
 
-    localStorage.setItem("userInfo", JSON.stringify(data));
+    // localStorage.setItem("userInfo", JSON.stringify(data));
+    localStorage.setItem(
+  "userInfo",
+  JSON.stringify({
+    _id: data._id,
+    name: data.name,
+    email: data.email,
+    phone: data.phone,
+    token: data.token,
+  })
+);
     navigate("/profile");
 
   } catch (err) {

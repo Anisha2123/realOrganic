@@ -84,6 +84,7 @@ console.log(`zipCode is ${zipCode}`);
               name: user.name,
               email: user.email,
               userId: user._id,
+              phone:user.phone,
               address: savedLocation?.full || "Address not selected",
               city: savedLocation?.short || "",
               zip: savedLocation?.zipCode || "",
