@@ -87,14 +87,28 @@ const Navbar = () => {
           
           {/* Logo & Location */}
           <div className="flex items-center gap-6 shrink-0">
-            <Link to="/" className="flex items-center gap-1.5">
+            {/* <Link to="/" className="flex items-center gap-1.5">
               <div className="bg-emerald-600 p-1.5 rounded-lg text-white">
                 <Leaf size={20} fill="currentColor" />
               </div>
               <span className="text-xl font-black text-gray-900 tracking-tighter hidden lg:block">
                 Real<span className="text-emerald-600">Organic</span>
               </span>
-            </Link>
+            </Link> */}
+            {/* Logo & Location */}
+<div className="flex items-center gap-4 sm:gap-6 shrink-0">
+  <Link to="/" className="flex items-center">
+
+    <img
+      src="/logo.jpg"
+      alt="Real Organic"
+      className="max-md:h-12 md:h-11 lg:h-15 xl:h-18 w-auto object-contain"
+    />
+
+  </Link>
+</div>
+
+            
 
             <button onClick={() => setIsLocationOpen(true)} className="flex flex-col items-start group">
               <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Delivery in 12 mins</span>

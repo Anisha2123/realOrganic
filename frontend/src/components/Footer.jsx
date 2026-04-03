@@ -10,14 +10,19 @@ const Footer = () => {
 
           {/* Brand */}
           <div className="space-y-6 max-sm:space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="bg-emerald-600 p-2 rounded-xl text-white">
-                <Leaf size={24} fill="currentColor" />
-              </div>
-              <span className="text-2xl max-sm:text-xl font-bold tracking-tight">
-                Real<span className="text-emerald-400">Organic</span>
-              </span>
-            </Link>
+            <Link to="/" className="flex items-center gap-2 sm:gap-3">
+
+    <img
+      src="/logo1.png"
+      alt="RealOrganic Logo"
+      className="max-md:h-9 md:h-10 lg:h-11 w-auto object-contain"
+    />
+
+    {/* <span className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">
+      Real<span className="text-emerald-400">Organic</span>
+    </span> */}
+
+  </Link>
             <p className="text-emerald-200/60 leading-relaxed text-sm max-sm:text-xs">
               We provide fresh, organic, and locally sourced vegetables and fruits directly from farmers to your doorstep. Eat healthy, live better.
             </p>
